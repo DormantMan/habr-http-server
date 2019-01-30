@@ -1,6 +1,6 @@
-FROM python:3.6.3
+FROM python:3.6.7
 
-RUN pip install Flask
+RUN pip install Flask requests beautifulsoup4
 
 COPY /src /src
 

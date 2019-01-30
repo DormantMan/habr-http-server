@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-docker build --tag=dormantman-habr-proxy .
-docker run -it --rm -p 8102:8102 -v $(pwd)/src:/src dormantman-habr-proxy
+docker build --tag=dormantman-habr-http-proxy .
+docker run -it --rm -p 8332:8332 -v $(pwd)/src:/src dormantman-habr-http-proxy

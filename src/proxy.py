@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, request, make_response
+from flask import Flask, request, Response
 from xml.sax.saxutils import unescape
 from bs4.element import Comment
 from bs4 import BeautifulSoup
@@ -25,15 +25,21 @@ def proxy(path):
     path_with_query_params = '{path}?{qs}'.format(path=path, qs=query_string)
 
     url = 'https://habr.com/{path}'.format(path=path_with_query_params)
-    headers = {
-        'User-Agent': request.headers['User-Agent']
-    }
+    headers = {key: value for (key, value) in
+               filter(lambda header: header[0] != 'Host', request.headers)}
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.request(
+            method=request.method,
+            url=url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=True
+        )
 
     except requests.exceptions.ConnectionError:
-        return make_response('<h1>We failed to reach a server.</h1>')
+        return Response('<h1>We failed to reach a server.</h1>')
 
     is_http_request = response.headers['Content-Type'].startswith('text/html')
     content = response.content
@@ -48,7 +54,12 @@ def proxy(path):
 
         content = soup.prettify("utf-8")
 
-    proxy_response = make_response(content, response.status_code)
+    excluded_headers = ['content-encoding', 'content-length',
+                        'transfer-encoding', 'connection']
+    headers = [(name, value) for (name, value) in response.raw.headers.items()
+               if name.lower() not in excluded_headers]
+
+    proxy_response = Response(content, response.status_code, headers)
     return proxy_response
 
 

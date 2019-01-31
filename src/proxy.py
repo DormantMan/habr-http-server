@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, request, make_response
+from xml.sax.saxutils import unescape
 from bs4.element import Comment
 from bs4 import BeautifulSoup
 import requests
@@ -45,7 +46,7 @@ def proxy(path):
 
         content_modification(soup.find('body'))
 
-        content = str(soup)
+        content = soup.prettify("utf-8")
 
     proxy_response = make_response(content, response.status_code)
     return proxy_response
@@ -56,11 +57,14 @@ def content_modification(tag):
         if string.parent.name in FREE_TAGS or isinstance(string, Comment):
             continue
 
+        text = unescape(string, entities={'&plus': '+'})
+
         text = re.sub(
             r'(?<!\w)(?P<object>\w{6})(?!\w)',
             r'\g<object>{tm}'.format(tm=CHAR_TM),
-            str(string)
+            text
         )
+
         string.replace_with(text)
 
 

@@ -50,6 +50,9 @@ def proxy(path):
         for a in soup.find_all('a', href=re.compile(MAIN_HOST)):
             a['href'] = a['href'].replace(MAIN_HOST, '')
 
+        for use in soup.find_all('use'):
+            use['xlink:href'] = use['xlink:href'].replace(MAIN_HOST, '')
+
         content_modification(soup.find('body'))
 
         content = soup.prettify("utf-8")
